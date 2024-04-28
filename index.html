@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medición de Ensayos</title>
+<style>
+    body {
+        background-image: url('https://www.cic.gba.gob.ar/wp-content/uploads/2022/10/DSC_8830-1024x683.jpg'); 
+        background-size: cover;
+        color: #C0C0C0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    form {
+        display: inline-block; /* Permite centrar el formulario */
+        text-align: left; /* Alinea el texto del formulario a la izquierda */
+    }
+
+    button {
+        margin-top: 10px; /* Agrega espacio arriba del botón */
+    }
+    .fecha {
+        margin-bottom: 10px; /* Agrega espacio entre cada línea */
+    }
+    @media print {
+        body, label, input, select, button, .fecha {
+            font-size: 34t; /* Tamaño de letra en puntos */
+        }
+</style>
+</head>
+<body>
+<h1>Medición de Ensayos</h1>
+<form id="fechaInicioForm">
+<label for="dia">Día:</label>
+<input type="number" id="dia" name="dia" required>
+<label for="mes">Mes:</label>
+<input type="number" id="mes" name="mes" required>
+<label for="anio">Año:</label>
+<input type="number" id="anio" name="anio" required>
+<label for="tipoEnsayo">Tipo de Ensayo:</label>
+<select id="tipoEnsayo" name="tipoEnsayo">
+    <option value="1">Tipo 38°</option>
+    <option value="2">Tipo 60°</option>
+    <option value="3">Tipo Cilindros</option>
+</select>
+<button type="button" onclick="calcularFechas()">Ingresar</button>
+</form>
+<div id="fechasContainer"></div>
+<script>
+function calcularFechas() {
+    const dia = document.getElementById('dia').value;
+    const mes = document.getElementById('mes').value;
+    const anio = document.getElementById('anio').value;
+    
+    // Validación de fecha
+  // Verificar si la fecha es válida
+    if (isNaN(dia) || isNaN(mes) || isNaN(anio) || dia < 1 || dia > 31 || mes < 1 || mes > 12 || anio < 1900 || anio > 2100) {
+        mostrarFechas([" "]);
+	mostrarFechas(["Fecha inválida"]);
+        return;
+    }
+    
+    
+    const comienzo = new Date(anio, mes - 1, dia);
+    const tipoEnsayo = document.getElementById('tipoEnsayo').value;
+    let l = [];
+    if (tipoEnsayo == 1) {
+        TREINTAYOCHOGRADOS(l);
+    } else if (tipoEnsayo == 2) {
+        SESENTAGRADOS(l);
+    } else if (tipoEnsayo == 3) {
+        CILINDROS(l);
+    } else {
+        alert("Tipo de ensayo no válido");
+        return;
+    }
+    mostrarFechas(Imprimir(l, comienzo));
+}
+
+function isValidDate(dia, mes, anio) {
+    const date = new Date(anio, mes - 1, dia);
+    return !isNaN(date.getTime());
+}
+
+function TREINTAYOCHOGRADOS(l){
+    l.push(1, 2, 4, 8, 13, 18, 26, 39, 45, 52);
+}
+
+function SESENTAGRADOS(l) {
+    let N = 5;
+    l.push(5);
+    while (N < 40) {
+        if (N < 20) {
+            if (N % 2 == 0) {
+                N += 2;
+            } else {
+                N += 3;
+            }
+        } else {
+            N += 4;
+        }
+        l.push(N);
+    }
+}
+
+function CILINDROS(l) {
+    for (let i = 3; i < 53; i += 3) {
+        l.push(i);
+    }
+}
+
+function Imprimir(l, comienzo) {
+    const factual = new Date();
+    let aux;
+    let fechas = [];
+    for (let i = 0; i < l.length; i++) {
+        const g = l[i];
+        aux = new Date(comienzo);
+        aux.setDate(aux.getDate() + g * 7); // Sumar semanas a la fecha de inicio
+        if (aux > factual) {  // Cambiado de >= a >
+	    fechas.push(" ");
+ 	    fechas.push(" ");
+            const diasquefaltan = Math.round((aux - factual) / (1000 * 60 * 60 * 24));
+            fechas.push("En la fecha " + aux.toLocaleDateString() + " medicion semana " + g + " ------- Faltan " + diasquefaltan + " dias");
+        }
+    }
+    return fechas;
+}
+
+function mostrarFechas(fechas) {
+    const fechasContainer = document.getElementById('fechasContainer');
+    fechasContainer.innerHTML = fechas.join("<br>");
+}
+</script>
+</body>
+</html>
